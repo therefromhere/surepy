@@ -18,6 +18,7 @@ from shutil import copyfile
 from sys import exit
 from typing import Any, cast
 
+import aiohttp
 import click
 
 from aiohttp import ClientSession, TCPConnector
@@ -28,9 +29,20 @@ from surepy import Surepy, __name__ as sp_name, __version__ as sp_version, conso
 from surepy.entities.devices import Flap, SurepyDevice
 from surepy.entities.pet import Pet
 from surepy.enums import Location, LockState
+import logging
 
 
 TOKEN_ENV = "SUREPY_TOKEN"
+
+
+async def on_request_start(session, trace_config_ctx, params):
+    print("starting request")
+    print(params)
+
+
+async def on_request_end(session, trace_config_ctx, params):
+    print("ending request")
+    print(params)
 
 
 def coro(f: Any) -> Any:
@@ -455,22 +467,27 @@ async def curfew(
 
     token = token if token else ctx.obj.get("token", None)
 
-    sp = Surepy(auth_token=token)
+    trace_config = aiohttp.TraceConfig()
+    trace_config.on_request_start.append(on_request_start)
+    trace_config.on_request_end.append(on_request_end)
 
-    if (flap := await sp.get_device(device_id=device_id)) and (type(flap) == Flap):
+    async with ClientSession(connector=TCPConnector(ssl=False), trace_configs=[trace_config]) as session:
+        sp = Surepy(auth_token=token, session=session)
 
-        flap = cast(Flap, flap)
+        if (flap := await sp.get_device(device_id=device_id)) and (type(flap) == Flap):
 
-        console.print(f"setting {flap.name} curfew {lock_time=} {unlock_time=}")
+            flap = cast(Flap, flap)
 
-        if await sp.sac.set_curfew(
-            device_id=device_id, lock_time=lock_time, unlock_time=unlock_time
-        ) and (device := await sp.get_device(device_id=device_id)):
-            console.print(f"✅ {device.name} curfew {lock_time=} {unlock_time=} 🐾")
-        else:
-            console.print(
-                f"❌ setting curfew {lock_time=} {unlock_time=} may have worked but something is fishy..!"
-            )
+            console.print(f"setting {flap.name} curfew {lock_time=} {unlock_time=}")
+
+            if await sp.sac.set_curfew(
+                device_id=device_id, lock_time=lock_time, unlock_time=unlock_time
+            ) and (device := await sp.get_device(device_id=device_id)):
+                console.print(f"✅ {device.name} curfew {lock_time=} {unlock_time=} 🐾")
+            else:
+                console.print(
+                    f"❌ setting curfew {lock_time=} {unlock_time=} may have worked but something is fishy..!"
+                )
 
 
 @cli.command()
@@ -519,4 +536,5 @@ async def position(
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     cli(obj={})
