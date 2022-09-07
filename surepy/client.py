@@ -393,7 +393,7 @@ class SureAPIClient:
 
         if (
             response := await self.call(
-                method="PUT", resource=resource, device_id=device_id, json=json.dumps(data, separators=(',', ':'), sort_keys=True)
+                method="PUT", resource=resource, device_id=device_id, json=data
             )
         ) and (response_data := response.get("data")):
 
