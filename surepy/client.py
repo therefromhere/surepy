@@ -27,6 +27,7 @@ from .const import (
     ACCEPT,
     ACCEPT_ENCODING,
     ACCEPT_LANGUAGE,
+    API_HOST,
     API_TIMEOUT,
     AUTH_RESOURCE,
     AUTHORIZATION,
@@ -142,7 +143,7 @@ class SureAPIClient:
         )
 
         return {
-            HOST: "app.api.surehub.io",
+            HOST: API_HOST,
             CONNECTION: "keep-alive",
             CONTENT_TYPE: CONTENT_TYPE_JSON,
             ACCEPT: f"{CONTENT_TYPE_JSON}, {CONTENT_TYPE_TEXT_PLAIN}, */*",

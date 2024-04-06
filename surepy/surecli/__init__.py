@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 
 from datetime import datetime, time
 from functools import wraps
@@ -97,6 +98,8 @@ def cli(ctx: click.Context, json: bool, user_token: str, version: bool) -> None:
 
     https://github.com/benleb/surepy
     """
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
 
     ctx.ensure_object(dict)
     # ctx.obj["verbose"] = verbose

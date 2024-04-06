@@ -7,7 +7,10 @@ SURE_BATT_VOLTAGE_DIFF = SURE_BATT_VOLTAGE_FULL - SURE_BATT_VOLTAGE_LOW
 SUREPY_USER_AGENT = "surepy {version} - https://github.com/benleb/surepy"
 
 # Sure Petcare API endpoints
-BASE_RESOURCE: str = "https://app.api.surehub.io/api"
+# API_HOST = "app-api.production.surehub.io"
+API_HOST = "app.api.surehub.io"
+
+BASE_RESOURCE: str = f"https://{API_HOST}/api"
 AUTH_RESOURCE: str = f"{BASE_RESOURCE}/auth/login"
 MESTART_RESOURCE: str = f"{BASE_RESOURCE}/me/start"
 TIMELINE_RESOURCE: str = f"{BASE_RESOURCE}/timeline"
