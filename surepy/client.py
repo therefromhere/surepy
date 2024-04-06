@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from http import HTTPStatus
 from http.client import HTTPException
 from logging import Logger
@@ -407,6 +407,21 @@ class SureAPIClient:
             # check if the state is correctly updated
             if state == desired_state:
                 return response
+            else:
+                bugged_unlock_time = unlock_time.replace(unlock_time.hour - 1)
+
+                bug_state = [{
+                    "lock_time": lock_time.strftime("%H:%M"),
+                    "unlock_time": bugged_unlock_time.strftime("%H:%M"),
+                    "enabled": True,
+                }]
+
+                if state == bug_state:
+                    # known issue, don't raise exception
+                    logger.warning("unlock_hour off by one - set %s, got %s (see https://github.com/benleb/surepy/issues/209)", desired_state, state)
+                    return response
+
+            logger.error("Error setting curfew, set %s, got %s", desired_state, state)
 
         # return None
         raise SurePetcareError("ERROR SETTING CURFEW - PLEASE CHECK IMMEDIATELY!")
